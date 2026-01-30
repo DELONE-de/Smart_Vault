@@ -1,0 +1,38 @@
+name: SmartVault CDK Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write   # REQUIRED for OIDC
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::364876732363:role/GitHubDeployRole
+          aws-region: us-east-1
+
+      - name: CDK Synth
+        run: npx cdk synth
+
+      - name: CDK Deploy
+        run: npx cdk deploy --require-approval never
